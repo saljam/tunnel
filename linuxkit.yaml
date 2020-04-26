@@ -19,13 +19,11 @@ onboot:
     image: linuxkit/metadata:v0.6
   - name: nat
     image: linuxkit/ip:v0.6
-    binds:
-      - /etc/nat.sh:/etc/nat.sh
+    binds: ["/etc/nat.sh:/etc/nat.sh"]
     command: ["/etc/nat.sh"]
   - name: wg0
     image: linuxkit/ip:v0.6
-    binds:
-      - /etc/wireguard:/etc/wireguard
+    binds: ["/etc/wireguard:/etc/wireguard"]
     command: ["/usr/bin/lk-wg-config", "configure", "/etc/wireguard/wg0.conf"]
     runtime:
       interfaces:
@@ -36,7 +34,7 @@ services:
   - name: rngd
     image: linuxkit/rngd:v0.6
   - name: strongswan
-    image: saljam/strongswan:latest
+    image: saljam/strongswan:5d6a176d693a9125d26529573b898047f423b11e
     binds:
       - /etc/resolv.conf:/etc/resolv.conf
       - /etc/ipsec.conf:/etc/ipsec.conf
@@ -47,6 +45,12 @@ services:
     image: linuxkit/sshd:v0.6
     #binds:
     #  - /run/config/ssh/authorized_keys:/root/.ssh/authorized_keys
+  - name: iodine
+    image: saljam/iodine:b1e79962e9a13e968413e08368df5c630af0cab0
+    binds:
+      - /etc/iodine.sh:/etc/iodine.sh
+      - /dev/net:/dev/net
+    command: ["/etc/iodine.sh"]
 files:
   - path: etc/nat.sh
     mode: "0555"
@@ -70,7 +74,7 @@ files:
           leftsubnet=0.0.0.0/0
           leftfirewall=yes
           right=%any
-          rightsourceip=10.8.0.0/16
+          rightsourceip=10.8.8.0/16
           auto=add
   # TODO get rid of this? set dns globally?
   - path: etc/strongswan.conf
@@ -86,6 +90,12 @@ files:
       }
       include strongswan.d/*.conf
   # TODO move the rest to user-data
+  - path: etc/iodine.sh
+    mode: "0555"
+    contents: |
+      #!/bin/sh
+      exec /bin/iodined -f -P somepassword -c 10.24.24.1 d.0f.io
+      sysctl net.ipv4.ip_forward=1
   - path: etc/ipsec.secrets
     contents: |
       : PSK CHANGEME
