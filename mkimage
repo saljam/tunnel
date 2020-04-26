@@ -1,0 +1,9 @@
+#!/bin/bash
+set -e
+
+dir="$(mktemp -d)"
+trap "rm -rf $dir" EXIT
+
+linuxkit pkg build -org saljam ./strongswan
+linuxkit build -format raw-bios -dir $dir ./linuxkit.yaml
+mv "$dir/linuxkit-bios.img" "$HOME/Desktop/tunnel-$(date -u +%Y%m%d%H%M%S).img"

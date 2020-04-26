@@ -1,0 +1,5 @@
+image: strongswan
+network: true
+config:
+  capabilities:
+    - all

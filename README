@@ -1,0 +1,1 @@
+minimal gateway vm image running a nat, wireguard, strongswan, and ssh.
